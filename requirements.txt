@@ -1,0 +1,4 @@
+fastapi
+cloudscraper
+beautifulsoup4
+python-multipart
