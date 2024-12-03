@@ -76,18 +76,19 @@ async def root():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/@heroicons/react@2.0.18/outline/esm/index.min.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
         <style>
             body {
                 font-family: 'Inter', sans-serif;
-                background-color: #f3f4f6;
+                background-color: #f9fafb;
+                color: #1f2937;
             }
             .phone-card {
-                transition: transform 0.2s ease-in-out;
+                transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
             }
             .phone-card:hover {
                 transform: translateY(-5px);
+                box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
             }
             .messages-container {
                 max-height: 80vh;
@@ -96,14 +97,33 @@ async def root():
             .loading {
                 backdrop-filter: blur(5px);
             }
+            .header {
+                background-color: #3b82f6;
+                color: white;
+                padding: 20px;
+                text-align: center;
+                border-radius: 0 0 10px 10px;
+            }
+            .refresh-button {
+                background-color: #3b82f6;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 5px;
+                transition: background-color 0.2s ease-in-out;
+            }
+            .refresh-button:hover {
+                background-color: #2563eb;
+            }
         </style>
     </head>
     <body>
         <div id="app" class="min-h-screen">
             <!-- 主页面 -->
             <div id="home-page" class="container mx-auto px-4 py-8">
-                <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">在线短信接收服务</h1>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="phones-container">
+                <div class="header">
+                    <h1 class="text-4xl font-bold">在线短信接收服务</h1>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8" id="phones-container">
                     <!-- 手机卡片将在这里动态生成 -->
                 </div>
             </div>
@@ -117,8 +137,8 @@ async def root():
                         </svg>
                         返回
                     </button>
-                    <h2 class="text-2xl font-bold text-gray-800" id="phone-title"></h2>
-                    <button onclick="refreshMessages()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    <h2 class="text-2xl font-bold" id="phone-title"></h2>
+                    <button onclick="refreshMessages()" class="refresh-button">
                         刷新
                     </button>
                 </div>
@@ -171,7 +191,7 @@ async def root():
                                         ${phone.location}
                                     </span>
                                 </div>
-                                <h3 class="text-xl font-semibold text-gray-800 mb-2">${phone.number}</h3>
+                                <h3 class="text-xl font-semibold mb-2">${phone.number}</h3>
                                 <p class="text-gray-600">点击查看最新短信</p>
                             </div>
                         `).join('');
