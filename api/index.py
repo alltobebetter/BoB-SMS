@@ -82,6 +82,7 @@ async def root():
     <!DOCTYPE html>
     <html>
     <head>
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
         <title>AIBoB / 临时短信接收</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
