@@ -82,7 +82,7 @@ async def root():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>在线短信接收</title>
+        <title>AIBoB / 临时短信接收</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -160,8 +160,8 @@ async def root():
             <!-- 主页面 -->
             <div id="home-page" class="container mx-auto px-4 py-12">
                 <div class="text-center mb-16 animate__animated animate__fadeIn">
-                    <h1 class="text-5xl font-bold gradient-text mb-4">在线短信接收服务</h1>
-                    <p class="text-gray-600 text-lg">选择一个虚拟号码来接收短信验证码</p>
+                    <h1 class="text-5xl font-bold gradient-text mb-4">AIBoB / 临时短信接收</h1>
+                    <p class="text-gray-600 text-lg">提供临时的接码服务，请勿滥用和依赖号码，某些号码可能无效。</br>发送验证码后请等待1-5分钟</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="phones-container">
