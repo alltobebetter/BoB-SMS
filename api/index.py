@@ -58,18 +58,26 @@ async def read_messages(phone_id: int):
         
     messages = get_messages(phone["url"])
     if messages:
-        return {"status": "success", "data": messages, "phone": phone}
+        public_phone = {
+            "id": phone["id"],
+            "number": phone["number"],
+            "location": phone["location"]
+        }
+        return {"status": "success", "data": messages, "phone": public_phone}
     return {"status": "error", "message": "Failed to fetch messages"}
 
 @app.get("/api/phones")
 async def get_phones():
     phone_data = load_phone_data()
-    return {"status": "success", "data": phone_data["phones"]}
+    public_phones = [{
+        "id": phone["id"],
+        "number": phone["number"],
+        "location": phone["location"]
+    } for phone in phone_data["phones"]]
+    return {"status": "success", "data": public_phones}
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-# api/index.py 中的 html_content 部分更新如下：
-
     html_content = """
     <!DOCTYPE html>
     <html>
@@ -160,7 +168,7 @@ async def root():
                     <!-- 手机卡片将在这里动态生成 -->
                 </div>
             </div>
-    
+
             <!-- 消息页面 -->
             <div id="messages-page" class="container mx-auto px-4 py-8 hidden">
                 <div class="glass-effect rounded-2xl p-6 mb-8">
@@ -181,7 +189,7 @@ async def root():
                     <!-- 消息将在这里动态生成 -->
                 </div>
             </div>
-    
+
             <!-- 加载动画 -->
             <div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
                 <div class="bg-white p-8 rounded-2xl shadow-xl">
@@ -190,32 +198,32 @@ async def root():
                 </div>
             </div>
         </div>
-    
+
         <script>
             // 初始化 Feather Icons
             feather.replace();
             
             let currentPhoneId = null;
-    
+
             function showLoading() {
                 document.getElementById('loading').classList.remove('hidden');
             }
-    
+
             function hideLoading() {
                 document.getElementById('loading').classList.add('hidden');
             }
-    
+
             function showHome() {
                 document.getElementById('messages-page').classList.add('hidden');
                 document.getElementById('home-page').classList.remove('hidden');
                 currentPhoneId = null;
             }
-    
+
             function showMessages() {
                 document.getElementById('home-page').classList.add('hidden');
                 document.getElementById('messages-page').classList.remove('hidden');
             }
-    
+
             async function loadPhones() {
                 try {
                     showLoading();
@@ -250,7 +258,7 @@ async def root():
                     hideLoading();
                 }
             }
-    
+
             async function loadMessages(phoneId) {
                 try {
                     showLoading();
@@ -285,13 +293,13 @@ async def root():
                     hideLoading();
                 }
             }
-    
+
             function refreshMessages() {
                 if (currentPhoneId) {
                     loadMessages(currentPhoneId);
                 }
             }
-    
+
             // 页面加载时获取手机列表
             document.addEventListener('DOMContentLoaded', loadPhones);
         </script>
