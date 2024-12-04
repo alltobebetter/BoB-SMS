@@ -1,10 +1,10 @@
-from fastapi import FastAPI
+import os
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import HTMLResponse
 import cloudscraper
 from bs4 import BeautifulSoup
 from fastapi.middleware.cors import CORSMiddleware
 import json
-import os
 
 app = FastAPI()
 
@@ -48,8 +48,14 @@ def get_messages(url):
         print(f'Error: {e}')
         return None
 
+def verify_password(passwd: str):
+    # 从环境变量中获取密码
+    correct_pass = os.getenv("API_PASSWORD")
+    if passwd != correct_pass:
+        raise HTTPException(status_code=403, detail="Invalid password")
+
 @app.get("/api/messages/{phone_id}")
-async def read_messages(phone_id: int):
+async def read_messages(phone_id: int, pass: str = Depends(verify_password)):
     phone_data = load_phone_data()
     phone = next((p for p in phone_data["phones"] if p["id"] == phone_id), None)
     
@@ -82,9 +88,7 @@ async def root():
     <!DOCTYPE html>
     <html>
     <head>
-        <link rel="icon" href="/favicon.ico" type="image/x-icon">
-        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-        <title>AIBoB / 临时短信接收</title>
+        <title>在线短信接收</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -162,8 +166,8 @@ async def root():
             <!-- 主页面 -->
             <div id="home-page" class="container mx-auto px-4 py-12">
                 <div class="text-center mb-16 animate__animated animate__fadeIn">
-                    <h1 class="text-5xl font-bold gradient-text mb-4">AIBoB / 临时短信接收</h1>
-                    <p class="text-gray-600 text-lg">提供临时的接码服务，请勿滥用和依赖号码，某些号码可能无效。</br>发送验证码后请等待1-5分钟</p>
+                    <h1 class="text-5xl font-bold gradient-text mb-4">在线短信接收服务</h1>
+                    <p class="text-gray-600 text-lg">选择一个虚拟号码来接收短信验证码</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="phones-container">
@@ -265,7 +269,7 @@ async def root():
                 try {
                     showLoading();
                     currentPhoneId = phoneId;
-                    const response = await fetch(`/api/messages/${phoneId}`);
+                    const response = await fetch(`/api/messages/${phoneId}?pass=YOUR_PASSWORD_HERE`);
                     const data = await response.json();
                     
                     if (data.status === 'success') {
