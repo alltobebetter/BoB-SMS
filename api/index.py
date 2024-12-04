@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
 import cloudscraper
 from bs4 import BeautifulSoup
@@ -7,6 +7,9 @@ import json
 import os
 
 app = FastAPI()
+
+# 设置密码
+CORRECT_PASSWORD = "your_password_here"  # 替换成你想要的密码
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,7 +36,7 @@ def get_messages(url):
         message_rows = soup.find_all('div', class_='row border-bottom table-hover')
         
         messages = []
-        for row in message_rows[:10]:  # 获取10条消息
+        for row in message_rows[:10]:
             sender = row.find('div', class_='mobile_hide').text.strip()
             content = row.find('div', class_='col-xs-12 col-md-8').text.strip()
             
@@ -49,12 +52,22 @@ def get_messages(url):
         return None
 
 @app.get("/api/messages/{phone_id}")
-async def read_messages(phone_id: int):
+async def read_messages(phone_id: int, pass_: str = Query(..., alias="pass")):
+    # 验证密码
+    if pass_ != CORRECT_PASSWORD:
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid password"
+        )
+    
     phone_data = load_phone_data()
     phone = next((p for p in phone_data["phones"] if p["id"] == phone_id), None)
     
     if not phone:
-        return {"status": "error", "message": "Phone not found"}
+        raise HTTPException(
+            status_code=404,
+            detail="Phone not found"
+        )
         
     messages = get_messages(phone["url"])
     if messages:
@@ -64,7 +77,11 @@ async def read_messages(phone_id: int):
             "location": phone["location"]
         }
         return {"status": "success", "data": messages, "phone": public_phone}
-    return {"status": "error", "message": "Failed to fetch messages"}
+    
+    raise HTTPException(
+        status_code=500,
+        detail="Failed to fetch messages"
+    )
 
 @app.get("/api/phones")
 async def get_phones():
@@ -263,7 +280,14 @@ async def root():
                 try {
                     showLoading();
                     currentPhoneId = phoneId;
-                    const response = await fetch(`/api/messages/${phoneId}`);
+                    const response = await fetch(`/api/messages/${phoneId}?pass=your_password_here`);
+                    
+                    if (response.status === 403) {
+                        alert('访问被拒绝：密码错误');
+                        hideLoading();
+                        return;
+                    }
+                    
                     const data = await response.json();
                     
                     if (data.status === 'success') {
@@ -289,6 +313,7 @@ async def root():
                     }
                 } catch (error) {
                     console.error('Error:', error);
+                    alert('获取消息失败');
                 } finally {
                     hideLoading();
                 }
