@@ -1,10 +1,10 @@
-import os
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 import cloudscraper
 from bs4 import BeautifulSoup
 from fastapi.middleware.cors import CORSMiddleware
 import json
+import os
 
 app = FastAPI()
 
@@ -48,14 +48,8 @@ def get_messages(url):
         print(f'Error: {e}')
         return None
 
-def verify_password(passwd: str):
-    # 从环境变量中获取密码
-    correct_pass = os.getenv("API_PASSWORD")
-    if passwd != correct_pass:
-        raise HTTPException(status_code=403, detail="Invalid password")
-
 @app.get("/api/messages/{phone_id}")
-async def read_messages(phone_id: int, pass: str = Depends(verify_password)):
+async def read_messages(phone_id: int):
     phone_data = load_phone_data()
     phone = next((p for p in phone_data["phones"] if p["id"] == phone_id), None)
     
@@ -269,7 +263,7 @@ async def root():
                 try {
                     showLoading();
                     currentPhoneId = phoneId;
-                    const response = await fetch(`/api/messages/${phoneId}?pass=YOUR_PASSWORD_HERE`);
+                    const response = await fetch(`/api/messages/${phoneId}`);
                     const data = await response.json();
                     
                     if (data.status === 'success') {
