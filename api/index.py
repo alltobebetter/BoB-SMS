@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import HTMLResponse
+from fastapi.security import APIKeyHeader
 import cloudscraper
 from bs4 import BeautifulSoup
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +16,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+api_key_header = APIKeyHeader(name="pass", auto_error=False)
+
+async def verify_api_key(api_key: str = Depends(api_key_header)):
+    API_PASSWORD = os.environ.get("API_PASSWORD")
+    if api_key != API_PASSWORD:
+        raise HTTPException(status_code=400, detail="Invalid API key")
+    return api_key
 
 def load_phone_data():
     current_dir = os.path.dirname(os.path.dirname(__file__))
@@ -49,7 +58,7 @@ def get_messages(url):
         return None
 
 @app.get("/api/messages/{phone_id}")
-async def read_messages(phone_id: int):
+async def read_messages(phone_id: int, api_key: str = Depends(verify_api_key)):
     phone_data = load_phone_data()
     phone = next((p for p in phone_data["phones"] if p["id"] == phone_id), None)
     
@@ -144,23 +153,7 @@ async def root():
                 animation: pulse 2s infinite;
             }
             
-            @keyframes float {
-                0% { transform: translateY(0px); }
-                50% { transform: translateY(-10px); }
-                100% { transform: translateY(0px); }
-            }
-            
-            .float {
-                animation: float 3s ease-in-out infinite;
-            }
-        </style>
-    </head>
-    <body class="min-h-screen">
-        <div id="app">
-            <!-- 主页面 -->
-            <div id="home-page" class="container mx-auto px-4 py-12">
-                <div class="text-center mb-16 animate__animated animate__fadeIn">
-                    <h1 class="text-5xl font-bold gradient-text mb-4">在线短信接收服务</h1>
+...(about 61 lines omitted)...
                     <p class="text-gray-600 text-lg">选择一个虚拟号码来接收短信验证码</p>
                 </div>
                 
@@ -263,7 +256,12 @@ async def root():
                 try {
                     showLoading();
                     currentPhoneId = phoneId;
-                    const response = await fetch(`/api/messages/${phoneId}`);
+                    const apiPassword = prompt('请输入API密码：');
+                    if (!apiPassword) {
+                        alert('密码不能为空');
+                        return;
+                    }
+                    const response = await fetch(`/api/messages/${phoneId}?pass=${apiPassword}`);
                     const data = await response.json();
                     
                     if (data.status === 'success') {
@@ -286,6 +284,8 @@ async def root():
                         `).join('');
                         feather.replace();
                         showMessages();
+                    } else if (data.detail === 'Invalid API key') {
+                        alert('API密码错误');
                     }
                 } catch (error) {
                     console.error('Error:', error);
