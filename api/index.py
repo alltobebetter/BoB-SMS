@@ -9,7 +9,7 @@ import os
 app = FastAPI()
 
 # 设置密码
-CORRECT_PASSWORD = "your_password_here"  # 替换成你想要的密码
+CORRECT_PASSWORD = "114514"  # 替换成你想要的密码
 
 app.add_middleware(
     CORSMiddleware,
@@ -172,8 +172,9 @@ async def root():
             <div id="home-page">
                 <div class="text-center mb-12">
                     <div class="flex items-center justify-center space-x-8 mb-6">
-                        <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors duration-200">主页</a>
-                        <h1 class="text-4xl font-bold text-gray-800">临时短信接收服务</h1>
+                        <a href="https://www.aibob.click/" class="text-gray-600 hover:text-blue-600 transition-colors duration-200">主页</a>
+                        <a href="https://mail.aibob.click/" class="text-gray-600 hover:text-blue-600 transition-colors duration-200">临时邮件</a>
+                        <h1 class="text-4xl font-bold text-gray-800">AIBoB 临时短信接收服务</h1>
                         <div class="flex items-center space-x-6">
                             <a href="/docs" target="_blank" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center">
                                 <i class="ph-code text-lg mr-1"></i>
