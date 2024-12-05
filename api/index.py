@@ -92,7 +92,6 @@ async def get_phones():
         "location": phone["location"]
     } for phone in phone_data["phones"]]
     return {"status": "success", "data": public_phones}
-
 @app.get("/", response_class=HTMLResponse)
 async def root():
     html_content = """
@@ -154,6 +153,17 @@ async def root():
                 from { opacity: 0; transform: translateY(10px); }
                 to { opacity: 1; transform: translateY(0); }
             }
+
+            .modal {
+                background-color: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(4px);
+            }
+            
+            .modal-content {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
         </style>
     </head>
     <body class="min-h-screen bg-gray-50">
@@ -161,7 +171,20 @@ async def root():
             <!-- 主页面 -->
             <div id="home-page">
                 <div class="text-center mb-12">
-                    <h1 class="text-4xl font-bold text-gray-800 mb-3">临时短信接收服务</h1>
+                    <div class="flex items-center justify-center space-x-8 mb-6">
+                        <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors duration-200">主页</a>
+                        <h1 class="text-4xl font-bold text-gray-800">临时短信接收服务</h1>
+                        <div class="flex items-center space-x-6">
+                            <a href="/docs" target="_blank" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center">
+                                <i class="ph-code text-lg mr-1"></i>
+                                API
+                            </a>
+                            <a href="#" onclick="showContact()" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center">
+                                <i class="ph-envelope text-lg mr-1"></i>
+                                联系我们
+                            </a>
+                        </div>
+                    </div>
                     <p class="text-gray-600">选择一个临时号码来接收验证码</p>
                 </div>
                 
@@ -198,6 +221,32 @@ async def root():
                     <p class="text-gray-600 mt-3">加载中...</p>
                 </div>
             </div>
+
+            <!-- 联系方式弹窗 -->
+            <div id="contact-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center">
+                <div class="modal-content w-full max-w-md mx-4 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-gray-800">联系方式</h3>
+                        <button onclick="hideContact()" class="text-gray-500 hover:text-gray-700">
+                            <i class="ph-x text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <i class="ph-envelope-simple text-blue-500 text-xl"></i>
+                            <span class="text-gray-600">email@example.com</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <i class="ph-telegram-logo text-blue-500 text-xl"></i>
+                            <span class="text-gray-600">@telegram_username</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <i class="ph-github-logo text-blue-500 text-xl"></i>
+                            <a href="https://github.com/yourusername" target="_blank" class="text-blue-600 hover:text-blue-800">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <script>
@@ -218,6 +267,14 @@ async def root():
             function showMessages() {
                 document.getElementById('home-page').classList.add('hidden');
                 document.getElementById('messages-page').classList.remove('hidden');
+            }
+
+            function showContact() {
+                document.getElementById('contact-modal').classList.remove('hidden');
+            }
+            
+            function hideContact() {
+                document.getElementById('contact-modal').classList.add('hidden');
             }
 
             let currentPhoneId = null;
@@ -294,6 +351,14 @@ async def root():
                 }
             }
 
+            // 点击模态框外部关闭
+            document.getElementById('contact-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideContact();
+                }
+            });
+
+            // 页面加载时获取手机列表
             document.addEventListener('DOMContentLoaded', loadPhones);
         </script>
     </body>
