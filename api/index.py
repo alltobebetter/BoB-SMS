@@ -9,7 +9,7 @@ import os
 app = FastAPI()
 
 # 设置密码
-CORRECT_PASSWORD = "114514"  # 替换成你想要的密码
+CORRECT_PASSWORD = "your_password_here"  # 替换成你想要的密码
 
 app.add_middleware(
     CORSMiddleware,
@@ -99,98 +99,127 @@ async def root():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>SMS Receiver</title>
+        <title>在线短信接收</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+        <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
         <style>
             body {
-                font-family: 'Plus Jakarta Sans', sans-serif;
-                background-color: #fafafa;
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(135deg, #f6f8ff 0%, #f1f5ff 100%);
             }
             
-            .card {
-                background: white;
-                border-radius: 16px;
+            .glass-effect {
+                background: rgba(255, 255, 255, 0.9);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            .phone-card {
                 transition: all 0.3s ease;
+                background: linear-gradient(145deg, #ffffff, #f5f7ff);
+                border: 1px solid rgba(255, 255, 255, 0.4);
             }
             
-            .card:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+            .phone-card:hover {
+                transform: translateY(-5px) scale(1.02);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            }
+            
+            .gradient-text {
+                background: linear-gradient(135deg, #2563eb, #3b82f6);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
             }
             
             .message-card {
-                background: white;
-                border-radius: 12px;
                 transition: all 0.2s ease;
             }
             
             .message-card:hover {
-                transform: translateX(4px);
+                transform: translateX(5px);
             }
             
             .custom-scrollbar::-webkit-scrollbar {
-                width: 4px;
+                width: 6px;
             }
             
             .custom-scrollbar::-webkit-scrollbar-track {
                 background: #f1f1f1;
+                border-radius: 3px;
             }
             
             .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: #ddd;
-                border-radius: 2px;
+                background: #c5c5c5;
+                border-radius: 3px;
+            }
+            
+            .pulse {
+                animation: pulse 2s infinite;
+            }
+            
+            @keyframes float {
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+                100% { transform: translateY(0px); }
+            }
+            
+            .float {
+                animation: float 3s ease-in-out infinite;
             }
         </style>
     </head>
-    <body class="min-h-screen bg-gray-50">
-        <div id="app" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <body class="min-h-screen">
+        <div id="app">
             <!-- 主页面 -->
-            <div id="home-page" class="py-12">
-                <div class="text-center mb-16">
-                    <h1 class="text-4xl font-bold text-gray-900 mb-3">在线短信接收</h1>
-                    <p class="text-gray-500">选择一个虚拟号码来接收短信验证码</p>
+            <div id="home-page" class="container mx-auto px-4 py-12">
+                <div class="text-center mb-16 animate__animated animate__fadeIn">
+                    <h1 class="text-5xl font-bold gradient-text mb-4">在线短信接收服务</h1>
+                    <p class="text-gray-600 text-lg">选择一个虚拟号码来接收短信验证码</p>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="phones-container">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="phones-container">
                     <!-- 手机卡片将在这里动态生成 -->
                 </div>
             </div>
 
             <!-- 消息页面 -->
-            <div id="messages-page" class="py-8 hidden">
-                <div class="flex items-center justify-between mb-8">
-                    <button onclick="showHome()" class="flex items-center text-gray-600 hover:text-gray-900">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                        </svg>
-                        返回
-                    </button>
-                    <h2 class="text-xl font-semibold text-gray-900" id="phone-title"></h2>
-                    <button onclick="refreshMessages()" class="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                        </svg>
-                        刷新
-                    </button>
+            <div id="messages-page" class="container mx-auto px-4 py-8 hidden">
+                <div class="glass-effect rounded-2xl p-6 mb-8">
+                    <div class="flex items-center justify-between">
+                        <button onclick="showHome()" class="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors">
+                            <i data-feather="arrow-left"></i>
+                            <span>返回</span>
+                        </button>
+                        <h2 class="text-2xl font-bold gradient-text" id="phone-title"></h2>
+                        <button onclick="refreshMessages()" class="flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i data-feather="refresh-cw"></i>
+                            <span>刷新</span>
+                        </button>
+                    </div>
                 </div>
                 
-                <div id="messages-container" class="space-y-4 custom-scrollbar">
+                <div id="messages-container" class="space-y-4 custom-scrollbar" style="max-height: 70vh; overflow-y: auto">
                     <!-- 消息将在这里动态生成 -->
                 </div>
             </div>
 
             <!-- 加载动画 -->
-            <div id="loading" class="hidden fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <div class="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
+            <div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+                <div class="bg-white p-8 rounded-2xl shadow-xl">
+                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto"></div>
+                    <p class="text-gray-600 mt-4">加载中...</p>
                 </div>
             </div>
         </div>
 
         <script>
+            // 初始化 Feather Icons
+            feather.replace();
+            
             let currentPhoneId = null;
 
             function showLoading() {
@@ -212,14 +241,9 @@ async def root():
                 document.getElementById('messages-page').classList.remove('hidden');
             }
 
-            function loadPhones() {
+            async function loadPhones() {
                 try {
                     showLoading();
-                    fetch('/api/phones')
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                const container = document.getElementById('phones-container');
                     const response = await fetch('/api/phones');
                     const data = await response.json();
                     
