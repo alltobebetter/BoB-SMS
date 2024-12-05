@@ -99,129 +99,108 @@ async def root():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>在线短信接收</title>
+        <title>临时短信接收</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-        <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+        <script src="https://unpkg.com/phosphor-icons"></script>
         <style>
             body {
-                font-family: 'Inter', sans-serif;
-                background: linear-gradient(135deg, #f6f8ff 0%, #f1f5ff 100%);
+                font-family: 'Noto Sans SC', sans-serif;
+                background-color: #fafafa;
             }
             
-            .glass-effect {
-                background: rgba(255, 255, 255, 0.9);
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-            }
-            
-            .phone-card {
+            .card {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
                 transition: all 0.3s ease;
-                background: linear-gradient(145deg, #ffffff, #f5f7ff);
-                border: 1px solid rgba(255, 255, 255, 0.4);
             }
             
-            .phone-card:hover {
-                transform: translateY(-5px) scale(1.02);
-                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            .card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
             }
             
-            .gradient-text {
-                background: linear-gradient(135deg, #2563eb, #3b82f6);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-            }
-            
-            .message-card {
+            .message-item {
+                border-left: 3px solid #3b82f6;
+                background: white;
                 transition: all 0.2s ease;
             }
             
-            .message-card:hover {
-                transform: translateX(5px);
+            .message-item:hover {
+                border-left-width: 5px;
             }
             
             .custom-scrollbar::-webkit-scrollbar {
-                width: 6px;
+                width: 4px;
             }
             
             .custom-scrollbar::-webkit-scrollbar-track {
                 background: #f1f1f1;
-                border-radius: 3px;
             }
             
             .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: #c5c5c5;
-                border-radius: 3px;
+                background: #cbd5e1;
+                border-radius: 2px;
             }
             
-            .pulse {
-                animation: pulse 2s infinite;
+            .fade-enter {
+                animation: fadeIn 0.5s ease-out;
             }
             
-            @keyframes float {
-                0% { transform: translateY(0px); }
-                50% { transform: translateY(-10px); }
-                100% { transform: translateY(0px); }
-            }
-            
-            .float {
-                animation: float 3s ease-in-out infinite;
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
             }
         </style>
     </head>
-    <body class="min-h-screen">
-        <div id="app">
+    <body class="min-h-screen bg-gray-50">
+        <div id="app" class="max-w-6xl mx-auto px-4 py-8">
             <!-- 主页面 -->
-            <div id="home-page" class="container mx-auto px-4 py-12">
-                <div class="text-center mb-16 animate__animated animate__fadeIn">
-                    <h1 class="text-5xl font-bold gradient-text mb-4">在线短信接收服务</h1>
-                    <p class="text-gray-600 text-lg">选择一个虚拟号码来接收短信验证码</p>
+            <div id="home-page">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold text-gray-800 mb-3">临时短信接收服务</h1>
+                    <p class="text-gray-600">选择一个临时号码来接收验证码</p>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="phones-container">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="phones-container">
                     <!-- 手机卡片将在这里动态生成 -->
                 </div>
             </div>
 
             <!-- 消息页面 -->
-            <div id="messages-page" class="container mx-auto px-4 py-8 hidden">
-                <div class="glass-effect rounded-2xl p-6 mb-8">
+            <div id="messages-page" class="hidden">
+                <div class="card p-4 mb-6">
                     <div class="flex items-center justify-between">
-                        <button onclick="showHome()" class="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors">
-                            <i data-feather="arrow-left"></i>
+                        <button onclick="showHome()" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600">
+                            <i class="ph-arrow-left"></i>
                             <span>返回</span>
                         </button>
-                        <h2 class="text-2xl font-bold gradient-text" id="phone-title"></h2>
-                        <button onclick="refreshMessages()" class="flex items-center space-x-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                            <i data-feather="refresh-cw"></i>
+                        <h2 class="text-xl font-semibold text-gray-800" id="phone-title"></h2>
+                        <button onclick="refreshMessages()" class="flex items-center space-x-2 text-blue-600 hover:text-blue-800">
+                            <i class="ph-arrows-clockwise"></i>
                             <span>刷新</span>
                         </button>
                     </div>
                 </div>
                 
-                <div id="messages-container" class="space-y-4 custom-scrollbar" style="max-height: 70vh; overflow-y: auto">
+                <div id="messages-container" class="space-y-4 custom-scrollbar" style="max-height: 75vh; overflow-y: auto">
                     <!-- 消息将在这里动态生成 -->
                 </div>
             </div>
 
             <!-- 加载动画 -->
-            <div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
-                <div class="bg-white p-8 rounded-2xl shadow-xl">
-                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto"></div>
-                    <p class="text-gray-600 mt-4">加载中...</p>
+            <div id="loading" class="hidden fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+                <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                    <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent mx-auto"></div>
+                    <p class="text-gray-600 mt-3">加载中...</p>
                 </div>
             </div>
         </div>
 
         <script>
-            // 初始化 Feather Icons
-            feather.replace();
-            
-            let currentPhoneId = null;
-
             function showLoading() {
                 document.getElementById('loading').classList.remove('hidden');
             }
@@ -241,6 +220,8 @@ async def root():
                 document.getElementById('messages-page').classList.remove('hidden');
             }
 
+            let currentPhoneId = null;
+
             async function loadPhones() {
                 try {
                     showLoading();
@@ -250,24 +231,21 @@ async def root():
                     if (data.status === 'success') {
                         const container = document.getElementById('phones-container');
                         container.innerHTML = data.data.map((phone, index) => `
-                            <div class="animate__animated animate__fadeInUp" style="animation-delay: ${index * 0.1}s">
-                                <div class="phone-card rounded-2xl shadow-lg p-8 cursor-pointer"
-                                     onclick="loadMessages(${phone.id})">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <span class="px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                                            ${phone.location}
-                                        </span>
-                                        <i data-feather="phone-call" class="text-blue-500"></i>
-                                    </div>
-                                    <h3 class="text-2xl font-bold text-gray-800 mb-4">${phone.number}</h3>
-                                    <div class="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
-                                        <span class="mr-2">查看短信</span>
-                                        <i data-feather="arrow-right"></i>
-                                    </div>
+                            <div class="card p-6 cursor-pointer fade-enter" style="animation-delay: ${index * 0.05}s"
+                                 onclick="loadMessages(${phone.id})">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm">
+                                        ${phone.location}
+                                    </span>
+                                    <i class="ph-phone text-blue-500 text-xl"></i>
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-800 mb-3">${phone.number}</h3>
+                                <div class="flex items-center text-blue-600">
+                                    <span class="text-sm">查看短信</span>
+                                    <i class="ph-arrow-right ml-2"></i>
                                 </div>
                             </div>
                         `).join('');
-                        feather.replace();
                     }
                 } catch (error) {
                     console.error('Error:', error);
@@ -284,7 +262,6 @@ async def root():
                     
                     if (response.status === 403) {
                         alert('访问被拒绝：密码错误');
-                        hideLoading();
                         return;
                     }
                     
@@ -294,21 +271,13 @@ async def root():
                         document.getElementById('phone-title').textContent = `${data.phone.number} (${data.phone.location})`;
                         const container = document.getElementById('messages-container');
                         container.innerHTML = data.data.map((message, index) => `
-                            <div class="animate__animated animate__fadeInRight" style="animation-delay: ${index * 0.05}s">
-                                <div class="message-card glass-effect rounded-xl p-6 hover:shadow-lg transition-all">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                                <i data-feather="message-circle" class="text-blue-500"></i>
-                                            </div>
-                                            <span class="font-medium text-gray-700">${message.sender}</span>
-                                        </div>
-                                    </div>
-                                    <p class="text-gray-600 pl-13">${message.content}</p>
+                            <div class="message-item p-4 rounded-lg fade-enter" style="animation-delay: ${index * 0.05}s">
+                                <div class="flex items-center mb-2">
+                                    <span class="font-medium text-gray-700">${message.sender}</span>
                                 </div>
+                                <p class="text-gray-600">${message.content}</p>
                             </div>
                         `).join('');
-                        feather.replace();
                         showMessages();
                     }
                 } catch (error) {
@@ -325,7 +294,6 @@ async def root():
                 }
             }
 
-            // 页面加载时获取手机列表
             document.addEventListener('DOMContentLoaded', loadPhones);
         </script>
     </body>
