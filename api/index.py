@@ -308,7 +308,7 @@ async def root():
                 try {
                     showLoading();
                     currentPhoneId = phoneId;
-                    const response = await fetch(`/api/messages/${phoneId}?pass=your_password_here`);
+                    const response = await fetch(`/api/messages/${phoneId}?pass=114514`);
                     
                     if (response.status === 403) {
                         alert('访问被拒绝：密码错误');
