@@ -235,15 +235,7 @@ async def root():
                     <div class="space-y-4">
                         <div class="flex items-center space-x-3">
                             <i class="ph-envelope-simple text-blue-500 text-xl"></i>
-                            <span class="text-gray-600">email@example.com</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <i class="ph-telegram-logo text-blue-500 text-xl"></i>
-                            <span class="text-gray-600">@telegram_username</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <i class="ph-github-logo text-blue-500 text-xl"></i>
-                            <a href="https://github.com/yourusername" target="_blank" class="text-blue-600 hover:text-blue-800">GitHub</a>
+                            <span class="text-gray-600">me@supage.eu.org</span>
                         </div>
                     </div>
                 </div>
