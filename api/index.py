@@ -112,88 +112,124 @@ async def root():
             }
             
             body {
-                background: #ffffff;
-                color: #1a1a1a;
                 line-height: 1.6;
+                height: 100vh;
+                overflow: hidden;
             }
             
             .container {
                 display: grid;
-                grid-template-columns: 300px 1fr;
-                min-height: 100vh;
+                grid-template-columns: 320px 1fr;
+                height: 100vh;
             }
             
             .sidebar {
-                padding: 2rem;
-                border-right: 1px solid #e5e5e5;
+                background: #1a1a1a;
+                color: #ffffff;
+                padding: 1.5rem;
+                overflow-y: auto;
             }
             
             .main-content {
-                padding: 2rem;
+                background: #ffffff;
+                color: #1a1a1a;
+                padding: 1.5rem;
+                overflow-y: auto;
             }
             
             h1 {
                 font-size: 1.5rem;
                 font-weight: 600;
                 margin-bottom: 1.5rem;
+                color: #ffffff;
             }
             
             .description {
                 font-size: 0.9rem;
-                color: #666;
+                color: #999;
                 margin-bottom: 2rem;
             }
             
-            .phone-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 1rem;
+            .phone-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
             }
             
-            .phone-card {
-                border: 1px solid #e5e5e5;
-                padding: 1.5rem;
-                transition: all 0.2s ease;
+            .phone-item {
+                border: 1px solid #333;
+                padding: 1rem;
                 cursor: pointer;
+                transition: all 0.2s ease;
+                border-radius: 4px;
             }
             
-            .phone-card:hover {
-                border-color: #000;
+            .phone-item:hover {
+                background: #333;
+            }
+            
+            .phone-item.active {
+                background: #333;
+                border-color: #666;
             }
             
             .phone-number {
-                font-size: 1.1rem;
+                font-size: 1rem;
                 font-weight: 500;
-                margin-bottom: 0.5rem;
+                margin-bottom: 0.25rem;
+                color: #fff;
             }
             
             .location {
-                font-size: 0.9rem;
-                color: #666;
+                font-size: 0.85rem;
+                color: #999;
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
             }
             
+            .messages-container {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .messages-header {
+                padding-bottom: 1rem;
+                border-bottom: 1px solid #eee;
+                margin-bottom: 1rem;
+            }
+            
             .messages {
-                margin-top: 2rem;
-                display: none;
+                flex: 1;
+                overflow-y: auto;
             }
             
             .message-item {
                 padding: 1rem;
-                border: 1px solid #e5e5e5;
+                border: 1px solid #eee;
                 margin-bottom: 0.5rem;
+                border-radius: 4px;
             }
             
             .message-sender {
                 font-weight: 500;
                 margin-bottom: 0.25rem;
+                color: #1a1a1a;
             }
             
             .message-content {
                 font-size: 0.9rem;
                 color: #666;
+            }
+            
+            .no-messages {
+                display: flex;
+                height: 100%;
+                align-items: center;
+                justify-content: center;
+                color: #999;
+                font-size: 1.1rem;
             }
             
             @media (max-width: 768px) {
@@ -202,8 +238,7 @@ async def root():
                 }
                 
                 .sidebar {
-                    border-right: none;
-                    border-bottom: 1px solid #e5e5e5;
+                    max-height: 50vh;
                 }
             }
         </style>
@@ -216,16 +251,26 @@ async def root():
                     提供临时手机号接收短信服务，支持多个国家号码。
                     所有号码实时更新，完全免费使用。
                 </p>
+                <div class="phone-list" id="phoneList"></div>
             </div>
             
             <div class="main-content">
-                <div class="phone-grid" id="phoneList"></div>
-                <div class="messages" id="messagesList"></div>
+                <div class="messages-container">
+                    <div class="messages-header" id="currentPhone" style="display: none;">
+                        <h2 class="current-number"></h2>
+                        <div class="current-location"></div>
+                    </div>
+                    <div class="no-messages" id="noMessages">
+                        请选择左侧手机号查看消息
+                    </div>
+                    <div class="messages" id="messagesList" style="display: none;"></div>
+                </div>
             </div>
         </div>
 
         <script>
             const PASSWORD = '114514';
+            let activePhoneId = null;
             
             async function loadPhones() {
                 const response = await fetch('/api/phones');
@@ -233,10 +278,10 @@ async def root():
                 
                 const phoneList = document.getElementById('phoneList');
                 phoneList.innerHTML = data.data.map(phone => `
-                    <div class="phone-card" onclick="loadMessages(${phone.id})">
+                    <div class="phone-item" id="phone-${phone.id}" onclick="loadMessages(${phone.id}, '${phone.number}', '${phone.location}')">
                         <div class="phone-number">${phone.number}</div>
                         <div class="location">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                                 <circle cx="12" cy="10" r="3"></circle>
                             </svg>
@@ -246,12 +291,25 @@ async def root():
                 `).join('');
             }
             
-            async function loadMessages(phoneId) {
+            async function loadMessages(phoneId, number, location) {
+                if (activePhoneId) {
+                    document.getElementById(`phone-${activePhoneId}`).classList.remove('active');
+                }
+                document.getElementById(`phone-${phoneId}`).classList.add('active');
+                activePhoneId = phoneId;
+                
+                const currentPhone = document.getElementById('currentPhone');
+                currentPhone.style.display = 'block';
+                currentPhone.querySelector('.current-number').textContent = number;
+                currentPhone.querySelector('.current-location').textContent = location;
+                
+                document.getElementById('noMessages').style.display = 'none';
+                const messagesList = document.getElementById('messagesList');
+                messagesList.style.display = 'block';
+                
                 const response = await fetch(`/api/messages/${phoneId}?pass=${PASSWORD}`);
                 const data = await response.json();
                 
-                const messagesList = document.getElementById('messagesList');
-                messagesList.style.display = 'block';
                 messagesList.innerHTML = data.data.map(message => `
                     <div class="message-item">
                         <div class="message-sender">${message.sender}</div>
