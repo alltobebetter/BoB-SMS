@@ -119,29 +119,55 @@ async def root():
             
             .container {
                 display: grid;
-                grid-template-columns: 320px 1fr;
+                grid-template-columns: 300px 1fr;
                 height: 100vh;
             }
             
             .sidebar {
                 background: #1a1a1a;
                 color: #ffffff;
-                padding: 1.5rem;
-                overflow-y: auto;
+                padding: 2rem;
+                border-right: 1px solid #333;
             }
             
             .main-content {
                 background: #ffffff;
-                color: #1a1a1a;
-                padding: 1.5rem;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .phone-page, .message-page {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                padding: 2rem;
                 overflow-y: auto;
+                transition: transform 0.3s ease;
+            }
+            
+            .phone-page {
+                transform: translateX(0);
+            }
+            
+            .phone-page.hidden {
+                transform: translateX(-100%);
+            }
+            
+            .message-page {
+                transform: translateX(100%);
+                background: #fff;
+            }
+            
+            .message-page.visible {
+                transform: translateX(0);
             }
             
             h1 {
-                font-size: 1.5rem;
+                font-size: 1.75rem;
                 font-weight: 600;
                 margin-bottom: 1.5rem;
-                color: #ffffff;
             }
             
             .description {
@@ -150,86 +176,69 @@ async def root():
                 margin-bottom: 2rem;
             }
             
-            .phone-list {
+            .phone-grid {
                 display: flex;
                 flex-direction: column;
-                gap: 0.5rem;
+                gap: 0.75rem;
             }
             
-            .phone-item {
-                border: 1px solid #333;
-                padding: 1rem;
+            .phone-card {
+                border: 1px solid #e5e5e5;
+                padding: 1.25rem;
                 cursor: pointer;
                 transition: all 0.2s ease;
-                border-radius: 4px;
             }
             
-            .phone-item:hover {
-                background: #333;
-            }
-            
-            .phone-item.active {
-                background: #333;
-                border-color: #666;
+            .phone-card:hover {
+                border-color: #000;
+                background: #f9f9f9;
             }
             
             .phone-number {
-                font-size: 1rem;
+                font-size: 1.1rem;
                 font-weight: 500;
-                margin-bottom: 0.25rem;
-                color: #fff;
+                margin-bottom: 0.5rem;
             }
             
             .location {
-                font-size: 0.85rem;
-                color: #999;
+                font-size: 0.9rem;
+                color: #666;
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
             }
             
-            .messages-container {
-                height: 100%;
+            .message-header {
                 display: flex;
-                flex-direction: column;
-            }
-            
-            .messages-header {
+                align-items: center;
+                margin-bottom: 2rem;
                 padding-bottom: 1rem;
                 border-bottom: 1px solid #eee;
-                margin-bottom: 1rem;
             }
             
-            .messages {
-                flex: 1;
-                overflow-y: auto;
+            .back-button {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 0.5rem;
+                margin-right: 1rem;
+                color: #666;
             }
             
             .message-item {
                 padding: 1rem;
                 border: 1px solid #eee;
-                margin-bottom: 0.5rem;
-                border-radius: 4px;
+                margin-bottom: 0.75rem;
             }
             
             .message-sender {
                 font-weight: 500;
                 margin-bottom: 0.25rem;
-                color: #1a1a1a;
             }
             
             .message-content {
                 font-size: 0.9rem;
                 color: #666;
-            }
-            
-            .no-messages {
-                display: flex;
-                height: 100%;
-                align-items: center;
-                justify-content: center;
-                color: #999;
-                font-size: 1.1rem;
             }
             
             @media (max-width: 768px) {
@@ -238,7 +247,7 @@ async def root():
                 }
                 
                 .sidebar {
-                    max-height: 50vh;
+                    padding: 1rem;
                 }
             }
         </style>
@@ -251,26 +260,29 @@ async def root():
                     提供临时手机号接收短信服务，支持多个国家号码。
                     所有号码实时更新，完全免费使用。
                 </p>
-                <div class="phone-list" id="phoneList"></div>
             </div>
             
             <div class="main-content">
-                <div class="messages-container">
-                    <div class="messages-header" id="currentPhone" style="display: none;">
-                        <h2 class="current-number"></h2>
-                        <div class="current-location"></div>
+                <div class="phone-page" id="phonePage">
+                    <div class="phone-grid" id="phoneList"></div>
+                </div>
+                <div class="message-page" id="messagePage">
+                    <div class="message-header">
+                        <button class="back-button" onclick="goBack()">
+                            ← 返回
+                        </button>
+                        <div>
+                            <h2 id="currentNumber"></h2>
+                            <div id="currentLocation" style="color: #666;"></div>
+                        </div>
                     </div>
-                    <div class="no-messages" id="noMessages">
-                        请选择左侧手机号查看消息
-                    </div>
-                    <div class="messages" id="messagesList" style="display: none;"></div>
+                    <div id="messagesList"></div>
                 </div>
             </div>
         </div>
 
         <script>
             const PASSWORD = '114514';
-            let activePhoneId = null;
             
             async function loadPhones() {
                 const response = await fetch('/api/phones');
@@ -278,7 +290,7 @@ async def root():
                 
                 const phoneList = document.getElementById('phoneList');
                 phoneList.innerHTML = data.data.map(phone => `
-                    <div class="phone-item" id="phone-${phone.id}" onclick="loadMessages(${phone.id}, '${phone.number}', '${phone.location}')">
+                    <div class="phone-card" onclick="showMessages(${phone.id}, '${phone.number}', '${phone.location}')">
                         <div class="phone-number">${phone.number}</div>
                         <div class="location">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -291,31 +303,27 @@ async def root():
                 `).join('');
             }
             
-            async function loadMessages(phoneId, number, location) {
-                if (activePhoneId) {
-                    document.getElementById(`phone-${activePhoneId}`).classList.remove('active');
-                }
-                document.getElementById(`phone-${phoneId}`).classList.add('active');
-                activePhoneId = phoneId;
-                
-                const currentPhone = document.getElementById('currentPhone');
-                currentPhone.style.display = 'block';
-                currentPhone.querySelector('.current-number').textContent = number;
-                currentPhone.querySelector('.current-location').textContent = location;
-                
-                document.getElementById('noMessages').style.display = 'none';
-                const messagesList = document.getElementById('messagesList');
-                messagesList.style.display = 'block';
+            async function showMessages(phoneId, number, location) {
+                document.getElementById('phonePage').classList.add('hidden');
+                document.getElementById('messagePage').classList.add('visible');
+                document.getElementById('currentNumber').textContent = number;
+                document.getElementById('currentLocation').textContent = location;
                 
                 const response = await fetch(`/api/messages/${phoneId}?pass=${PASSWORD}`);
                 const data = await response.json();
                 
+                const messagesList = document.getElementById('messagesList');
                 messagesList.innerHTML = data.data.map(message => `
                     <div class="message-item">
                         <div class="message-sender">${message.sender}</div>
                         <div class="message-content">${message.content}</div>
                     </div>
                 `).join('');
+            }
+            
+            function goBack() {
+                document.getElementById('phonePage').classList.remove('hidden');
+                document.getElementById('messagePage').classList.remove('visible');
             }
             
             loadPhones();
