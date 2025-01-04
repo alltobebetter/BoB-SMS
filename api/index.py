@@ -176,7 +176,6 @@ async def root():
             
             .links-section {
                 background: #222;
-                border-radius: 8px;
                 padding: 1.5rem;
                 margin-top: auto;
             }
@@ -196,7 +195,6 @@ async def root():
                 color: #999;
                 text-decoration: none;
                 padding: 0.75rem;
-                border-radius: 6px;
                 transition: all 0.2s ease;
                 margin-bottom: 0.5rem;
             }
@@ -204,10 +202,6 @@ async def root():
             .link-item:hover {
                 color: #fff;
                 background: #2a2a2a;
-            }
-            
-            .link-item svg {
-                flex-shrink: 0;
             }
             
             .link-text {
@@ -296,10 +290,19 @@ async def root():
                 gap: 1rem;
             }
             
+            .back-button {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 0.5rem;
+                margin-right: 1rem;
+                color: #666;
+            }
+            
             .refresh-button {
+                position: relative;
                 background: none;
                 border: 1px solid #eee;
-                border-radius: 4px;
                 padding: 0.5rem 1rem;
                 cursor: pointer;
                 display: flex;
@@ -308,18 +311,27 @@ async def root():
                 transition: all 0.2s ease;
             }
             
-            .refresh-button:hover {
-                background: #f5f5f5;
-                border-color: #ddd;
+            .refresh-button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
             }
             
-            .back-button {
-                background: none;
-                border: none;
-                cursor: pointer;
-                padding: 0.5rem;
-                margin-right: 1rem;
-                color: #666;
+            .refresh-button .spinner {
+                display: none;
+                width: 16px;
+                height: 16px;
+                border: 2px solid #666;
+                border-top-color: transparent;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+            
+            .refresh-button.loading .spinner {
+                display: inline-block;
+            }
+            
+            .refresh-button.loading .refresh-icon {
+                display: none;
             }
             
             .message-item {
@@ -338,13 +350,21 @@ async def root():
                 color: #666;
             }
             
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+            
             @media (max-width: 768px) {
                 .container {
                     grid-template-columns: 1fr;
                 }
                 
                 .sidebar {
-                    padding: 1rem;
+                    display: none;
+                }
+                
+                .main-content {
+                    height: 100vh;
                 }
             }
         </style>
@@ -378,7 +398,7 @@ async def root():
                         </svg>
                         <span class="link-text">购买API服务</span>
                     </a>
-                    <a href="/api/phones" target="_blank" class="link-item">
+                    <a href="/docs" target="_blank" class="link-item">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                             <polyline points="14 2 14 8 20 8"></polyline>
@@ -407,7 +427,8 @@ async def root():
                             </div>
                         </div>
                         <button class="refresh-button" onclick="refreshMessages()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <div class="spinner"></div>
+                            <svg class="refresh-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                             </svg>
                             刷新
