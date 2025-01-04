@@ -354,6 +354,7 @@ async def root():
         <script>
             const PASSWORD = '114514';
             let currentPhoneId = null;
+            let isRefreshing = false;
             
             async function loadPhones() {
                 const response = await fetch('/api/phones');
@@ -397,8 +398,19 @@ async def root():
             }
             
             async function refreshMessages() {
-                if (currentPhoneId) {
+                if (isRefreshing || !currentPhoneId) return;
+                
+                const refreshBtn = document.querySelector('.refresh-button');
+                refreshBtn.classList.add('loading');
+                refreshBtn.disabled = true;
+                isRefreshing = true;
+                
+                try {
                     await loadMessages(currentPhoneId);
+                } finally {
+                    refreshBtn.classList.remove('loading');
+                    refreshBtn.disabled = false;
+                    isRefreshing = false;
                 }
             }
             
