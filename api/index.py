@@ -92,267 +92,175 @@ async def get_phones():
         "location": phone["location"]
     } for phone in phone_data["phones"]]
     return {"status": "success", "data": public_phones}
+
 @app.get("/", response_class=HTMLResponse)
 async def root():
     html_content = """
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
-        <title>AIBoB / 临时短信接收</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-        <script src="https://unpkg.com/phosphor-icons"></script>
+        <title>临时手机号服务</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
         <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Inter', sans-serif;
+            }
+            
             body {
-                font-family: 'Noto Sans SC', sans-serif;
-                background-color: #fafafa;
+                background: #ffffff;
+                color: #1a1a1a;
+                line-height: 1.6;
             }
             
-            .card {
-                background: white;
-                border-radius: 16px;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                transition: all 0.3s ease;
+            .container {
+                display: grid;
+                grid-template-columns: 300px 1fr;
+                min-height: 100vh;
             }
             
-            .card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+            .sidebar {
+                padding: 2rem;
+                border-right: 1px solid #e5e5e5;
+            }
+            
+            .main-content {
+                padding: 2rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+                font-weight: 600;
+                margin-bottom: 1.5rem;
+            }
+            
+            .description {
+                font-size: 0.9rem;
+                color: #666;
+                margin-bottom: 2rem;
+            }
+            
+            .phone-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1rem;
+            }
+            
+            .phone-card {
+                border: 1px solid #e5e5e5;
+                padding: 1.5rem;
+                transition: all 0.2s ease;
+                cursor: pointer;
+            }
+            
+            .phone-card:hover {
+                border-color: #000;
+            }
+            
+            .phone-number {
+                font-size: 1.1rem;
+                font-weight: 500;
+                margin-bottom: 0.5rem;
+            }
+            
+            .location {
+                font-size: 0.9rem;
+                color: #666;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .messages {
+                margin-top: 2rem;
+                display: none;
             }
             
             .message-item {
-                border-left: 3px solid #3b82f6;
-                background: white;
-                transition: all 0.2s ease;
+                padding: 1rem;
+                border: 1px solid #e5e5e5;
+                margin-bottom: 0.5rem;
             }
             
-            .message-item:hover {
-                border-left-width: 5px;
+            .message-sender {
+                font-weight: 500;
+                margin-bottom: 0.25rem;
             }
             
-            .custom-scrollbar::-webkit-scrollbar {
-                width: 4px;
+            .message-content {
+                font-size: 0.9rem;
+                color: #666;
             }
             
-            .custom-scrollbar::-webkit-scrollbar-track {
-                background: #f1f1f1;
-            }
-            
-            .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: #cbd5e1;
-                border-radius: 2px;
-            }
-            
-            .fade-enter {
-                animation: fadeIn 0.5s ease-out;
-            }
-            
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-
-            .modal {
-                background-color: rgba(0, 0, 0, 0.5);
-                backdrop-filter: blur(4px);
-            }
-            
-            .modal-content {
-                background: white;
-                border-radius: 16px;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            @media (max-width: 768px) {
+                .container {
+                    grid-template-columns: 1fr;
+                }
+                
+                .sidebar {
+                    border-right: none;
+                    border-bottom: 1px solid #e5e5e5;
+                }
             }
         </style>
     </head>
-    <body class="min-h-screen bg-gray-50">
-        <div id="app" class="max-w-6xl mx-auto px-4 py-8">
-            <!-- 主页面 -->
-            <div id="home-page">
-                <div class="text-center mb-12">
-                    <div class="flex items-center justify-center space-x-8 mb-6">
-                        <a href="https://www.aibob.click/" class="text-gray-600 hover:text-blue-600 transition-colors duration-200">主页</a>
-                        <a href="https://mail.aibob.click/" class="text-gray-600 hover:text-blue-600 transition-colors duration-200">临时邮件</a>
-                        <h1 class="text-4xl font-bold text-gray-800">AIBoB 临时短信接收服务</h1>
-                        <div class="flex items-center space-x-6">
-                            <a href="/docs" target="_blank" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center">
-                                <i class="ph-code text-lg mr-1"></i>
-                                API
-                            </a>
-                            <a href="#" onclick="showContact()" class="text-gray-600 hover:text-blue-600 transition-colors duration-200 flex items-center">
-                                <i class="ph-envelope text-lg mr-1"></i>
-                                联系我们
-                            </a>
-                        </div>
-                    </div>
-                    <p class="text-gray-600">选择一个临时号码来接收验证码</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="phones-container">
-                    <!-- 手机卡片将在这里动态生成 -->
-                </div>
+    <body>
+        <div class="container">
+            <div class="sidebar">
+                <h1>临时手机号服务</h1>
+                <p class="description">
+                    提供临时手机号接收短信服务，支持多个国家号码。
+                    所有号码实时更新，完全免费使用。
+                </p>
             </div>
-
-            <!-- 消息页面 -->
-            <div id="messages-page" class="hidden">
-                <div class="card p-4 mb-6">
-                    <div class="flex items-center justify-between">
-                        <button onclick="showHome()" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600">
-                            <i class="ph-arrow-left"></i>
-                            <span>返回</span>
-                        </button>
-                        <h2 class="text-xl font-semibold text-gray-800" id="phone-title"></h2>
-                        <button onclick="refreshMessages()" class="flex items-center space-x-2 text-blue-600 hover:text-blue-800">
-                            <i class="ph-arrows-clockwise"></i>
-                            <span>刷新</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="messages-container" class="space-y-4 custom-scrollbar" style="max-height: 75vh; overflow-y: auto">
-                    <!-- 消息将在这里动态生成 -->
-                </div>
-            </div>
-
-            <!-- 加载动画 -->
-            <div id="loading" class="hidden fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-                <div class="bg-white p-6 rounded-lg shadow-xl text-center">
-                    <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent mx-auto"></div>
-                    <p class="text-gray-600 mt-3">加载中...</p>
-                </div>
-            </div>
-
-            <!-- 联系方式弹窗 -->
-            <div id="contact-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center">
-                <div class="modal-content w-full max-w-md mx-4 p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-semibold text-gray-800">联系方式</h3>
-                        <button onclick="hideContact()" class="text-gray-500 hover:text-gray-700">
-                            <i class="ph-x text-xl"></i>
-                        </button>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="flex items-center space-x-3">
-                            <i class="ph-envelope-simple text-blue-500 text-xl"></i>
-                            <span class="text-gray-600">me@supage.eu.org</span>
-                        </div>
-                    </div>
-                </div>
+            
+            <div class="main-content">
+                <div class="phone-grid" id="phoneList"></div>
+                <div class="messages" id="messagesList"></div>
             </div>
         </div>
 
         <script>
-            function showLoading() {
-                document.getElementById('loading').classList.remove('hidden');
-            }
-
-            function hideLoading() {
-                document.getElementById('loading').classList.add('hidden');
-            }
-
-            function showHome() {
-                document.getElementById('messages-page').classList.add('hidden');
-                document.getElementById('home-page').classList.remove('hidden');
-                currentPhoneId = null;
-            }
-
-            function showMessages() {
-                document.getElementById('home-page').classList.add('hidden');
-                document.getElementById('messages-page').classList.remove('hidden');
-            }
-
-            function showContact() {
-                document.getElementById('contact-modal').classList.remove('hidden');
+            const PASSWORD = '114514';
+            
+            async function loadPhones() {
+                const response = await fetch('/api/phones');
+                const data = await response.json();
+                
+                const phoneList = document.getElementById('phoneList');
+                phoneList.innerHTML = data.data.map(phone => `
+                    <div class="phone-card" onclick="loadMessages(${phone.id})">
+                        <div class="phone-number">${phone.number}</div>
+                        <div class="location">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            ${phone.location}
+                        </div>
+                    </div>
+                `).join('');
             }
             
-            function hideContact() {
-                document.getElementById('contact-modal').classList.add('hidden');
-            }
-
-            let currentPhoneId = null;
-
-            async function loadPhones() {
-                try {
-                    showLoading();
-                    const response = await fetch('/api/phones');
-                    const data = await response.json();
-                    
-                    if (data.status === 'success') {
-                        const container = document.getElementById('phones-container');
-                        container.innerHTML = data.data.map((phone, index) => `
-                            <div class="card p-6 cursor-pointer fade-enter" style="animation-delay: ${index * 0.05}s"
-                                 onclick="loadMessages(${phone.id})">
-                                <div class="flex items-center justify-between mb-4">
-                                    <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm">
-                                        ${phone.location}
-                                    </span>
-                                    <i class="ph-phone text-blue-500 text-xl"></i>
-                                </div>
-                                <h3 class="text-lg font-medium text-gray-800 mb-3">${phone.number}</h3>
-                                <div class="flex items-center text-blue-600">
-                                    <span class="text-sm">查看短信</span>
-                                    <i class="ph-arrow-right ml-2"></i>
-                                </div>
-                            </div>
-                        `).join('');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                } finally {
-                    hideLoading();
-                }
-            }
-
             async function loadMessages(phoneId) {
-                try {
-                    showLoading();
-                    currentPhoneId = phoneId;
-                    const response = await fetch(`/api/messages/${phoneId}?pass=114514`);
-                    
-                    if (response.status === 403) {
-                        alert('访问被拒绝：密码错误');
-                        return;
-                    }
-                    
-                    const data = await response.json();
-                    
-                    if (data.status === 'success') {
-                        document.getElementById('phone-title').textContent = `${data.phone.number} (${data.phone.location})`;
-                        const container = document.getElementById('messages-container');
-                        container.innerHTML = data.data.map((message, index) => `
-                            <div class="message-item p-4 rounded-lg fade-enter" style="animation-delay: ${index * 0.05}s">
-                                <div class="flex items-center mb-2">
-                                    <span class="font-medium text-gray-700">${message.sender}</span>
-                                </div>
-                                <p class="text-gray-600">${message.content}</p>
-                            </div>
-                        `).join('');
-                        showMessages();
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('获取消息失败');
-                } finally {
-                    hideLoading();
-                }
+                const response = await fetch(`/api/messages/${phoneId}?pass=${PASSWORD}`);
+                const data = await response.json();
+                
+                const messagesList = document.getElementById('messagesList');
+                messagesList.style.display = 'block';
+                messagesList.innerHTML = data.data.map(message => `
+                    <div class="message-item">
+                        <div class="message-sender">${message.sender}</div>
+                        <div class="message-content">${message.content}</div>
+                    </div>
+                `).join('');
             }
-
-            function refreshMessages() {
-                if (currentPhoneId) {
-                    loadMessages(currentPhoneId);
-                }
-            }
-
-            // 点击模态框外部关闭
-            document.getElementById('contact-modal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    hideContact();
-                }
-            });
-
-            // 页面加载时获取手机列表
-            document.addEventListener('DOMContentLoaded', loadPhones);
+            
+            loadPhones();
         </script>
     </body>
     </html>
