@@ -128,6 +128,42 @@ async def root():
                 color: #ffffff;
                 padding: 2rem;
                 border-right: 1px solid #333;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                position: relative;
+            }
+            
+            .sidebar::before, .sidebar::after {
+                content: '';
+                position: absolute;
+                left: 2rem;
+                right: 2rem;
+                height: 1px;
+                background: linear-gradient(to right, transparent, #333, transparent);
+            }
+            
+            .sidebar::before {
+                top: 2rem;
+            }
+            
+            .sidebar::after {
+                bottom: 2rem;
+            }
+            
+            .sidebar-content {
+                position: relative;
+                padding: 2rem 0;
+            }
+            
+            .sidebar-content::before {
+                content: '';
+                position: absolute;
+                left: -2rem;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                background: linear-gradient(to bottom, transparent, #333, transparent);
             }
             
             .main-content {
@@ -211,9 +247,33 @@ async def root():
             .message-header {
                 display: flex;
                 align-items: center;
+                justify-content: space-between;
                 margin-bottom: 2rem;
                 padding-bottom: 1rem;
                 border-bottom: 1px solid #eee;
+            }
+            
+            .header-left {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .refresh-button {
+                background: none;
+                border: 1px solid #eee;
+                border-radius: 4px;
+                padding: 0.5rem 1rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: all 0.2s ease;
+            }
+            
+            .refresh-button:hover {
+                background: #f5f5f5;
+                border-color: #ddd;
             }
             
             .back-button {
@@ -255,11 +315,13 @@ async def root():
     <body>
         <div class="container">
             <div class="sidebar">
-                <h1>临时手机号服务</h1>
-                <p class="description">
-                    提供临时手机号接收短信服务，支持多个国家号码。
-                    所有号码实时更新，完全免费使用。
-                </p>
+                <div class="sidebar-content">
+                    <h1>临时手机号服务</h1>
+                    <p class="description">
+                        提供临时手机号接收短信服务，支持多个国家号码。
+                        所有号码实时更新，完全免费使用。
+                    </p>
+                </div>
             </div>
             
             <div class="main-content">
@@ -268,13 +330,21 @@ async def root():
                 </div>
                 <div class="message-page" id="messagePage">
                     <div class="message-header">
-                        <button class="back-button" onclick="goBack()">
-                            ← 返回
-                        </button>
-                        <div>
-                            <h2 id="currentNumber"></h2>
-                            <div id="currentLocation" style="color: #666;"></div>
+                        <div class="header-left">
+                            <button class="back-button" onclick="goBack()">
+                                ← 返回
+                            </button>
+                            <div>
+                                <h2 id="currentNumber"></h2>
+                                <div id="currentLocation" style="color: #666;"></div>
+                            </div>
                         </div>
+                        <button class="refresh-button" onclick="refreshMessages()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                            刷新
+                        </button>
                     </div>
                     <div id="messagesList"></div>
                 </div>
@@ -283,6 +353,7 @@ async def root():
 
         <script>
             const PASSWORD = '114514';
+            let currentPhoneId = null;
             
             async function loadPhones() {
                 const response = await fetch('/api/phones');
@@ -304,11 +375,15 @@ async def root():
             }
             
             async function showMessages(phoneId, number, location) {
+                currentPhoneId = phoneId;
                 document.getElementById('phonePage').classList.add('hidden');
                 document.getElementById('messagePage').classList.add('visible');
                 document.getElementById('currentNumber').textContent = number;
                 document.getElementById('currentLocation').textContent = location;
-                
+                await loadMessages(phoneId);
+            }
+            
+            async function loadMessages(phoneId) {
                 const response = await fetch(`/api/messages/${phoneId}?pass=${PASSWORD}`);
                 const data = await response.json();
                 
@@ -319,6 +394,12 @@ async def root():
                         <div class="message-content">${message.content}</div>
                     </div>
                 `).join('');
+            }
+            
+            async function refreshMessages() {
+                if (currentPhoneId) {
+                    await loadMessages(currentPhoneId);
+                }
             }
             
             function goBack() {
