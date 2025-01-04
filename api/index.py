@@ -126,44 +126,93 @@ async def root():
             .sidebar {
                 background: #1a1a1a;
                 color: #ffffff;
-                padding: 2rem;
+                padding: 2.5rem;
                 border-right: 1px solid #333;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
+                justify-content: space-between;
                 position: relative;
             }
             
-            .sidebar::before, .sidebar::after {
+            .sidebar::before {
                 content: '';
                 position: absolute;
-                left: 2rem;
-                right: 2rem;
-                height: 1px;
-                background: linear-gradient(to right, transparent, #333, transparent);
-            }
-            
-            .sidebar::before {
-                top: 2rem;
-            }
-            
-            .sidebar::after {
-                bottom: 2rem;
+                top: 0;
+                left: 0;
+                width: 4px;
+                height: 100%;
+                background: linear-gradient(to bottom, #333, transparent);
             }
             
             .sidebar-content {
                 position: relative;
-                padding: 2rem 0;
             }
             
-            .sidebar-content::before {
+            h1 {
+                font-size: 1.75rem;
+                font-weight: 600;
+                margin-bottom: 1.5rem;
+                padding-bottom: 1.5rem;
+                border-bottom: 2px solid #333;
+                position: relative;
+            }
+            
+            h1::after {
                 content: '';
                 position: absolute;
-                left: -2rem;
-                top: 0;
-                bottom: 0;
-                width: 3px;
-                background: linear-gradient(to bottom, transparent, #333, transparent);
+                bottom: -2px;
+                left: 0;
+                width: 50%;
+                height: 2px;
+                background: #666;
+            }
+            
+            .description {
+                font-size: 0.95rem;
+                color: #999;
+                margin-bottom: 3rem;
+                line-height: 1.8;
+            }
+            
+            .links-section {
+                background: #222;
+                border-radius: 8px;
+                padding: 1.5rem;
+                margin-top: auto;
+            }
+            
+            .links-title {
+                font-size: 0.85rem;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 1rem;
+            }
+            
+            .link-item {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                color: #999;
+                text-decoration: none;
+                padding: 0.75rem;
+                border-radius: 6px;
+                transition: all 0.2s ease;
+                margin-bottom: 0.5rem;
+            }
+            
+            .link-item:hover {
+                color: #fff;
+                background: #2a2a2a;
+            }
+            
+            .link-item svg {
+                flex-shrink: 0;
+            }
+            
+            .link-text {
+                font-size: 0.9rem;
+                font-weight: 500;
             }
             
             .main-content {
@@ -198,18 +247,6 @@ async def root():
             
             .message-page.visible {
                 transform: translateX(0);
-            }
-            
-            h1 {
-                font-size: 1.75rem;
-                font-weight: 600;
-                margin-bottom: 1.5rem;
-            }
-            
-            .description {
-                font-size: 0.9rem;
-                color: #999;
-                margin-bottom: 2rem;
             }
             
             .phone-grid {
@@ -321,6 +358,36 @@ async def root():
                         提供临时手机号接收短信服务，支持多个国家号码。
                         所有号码实时更新，完全免费使用。
                     </p>
+                </div>
+                <div class="links-section">
+                    <div class="links-title">相关链接</div>
+                    <a href="https://aibob.click" target="_blank" class="link-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M16 16s-1.5-2-4-2-4 2-4 2"></path>
+                            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                        </svg>
+                        <span class="link-text">AI智能助手</span>
+                    </a>
+                    <a href="https://buy.aibob.click/sms" target="_blank" class="link-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path>
+                            <path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path>
+                            <path d="M18 12H4"></path>
+                        </svg>
+                        <span class="link-text">购买API服务</span>
+                    </a>
+                    <a href="/api/phones" target="_blank" class="link-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <span class="link-text">API文档</span>
+                    </a>
                 </div>
             </div>
             
