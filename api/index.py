@@ -9,7 +9,7 @@ import os
 app = FastAPI()
 
 # 设置多个有效密码
-VALID_PASSWORDS = ["114514", "1919810", "123456"]  # 可以添加更多密码
+VALID_PASSWORDS = ["114514", "weekxua8xa1", "cd434a1w44", "x8ss9a0"]  # 可以添加更多密码
 
 app.add_middleware(
     CORSMiddleware,
