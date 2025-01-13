@@ -8,8 +8,8 @@ import os
 
 app = FastAPI()
 
-# 设置密码
-CORRECT_PASSWORD = "114514"  # 替换成你想要的密码
+# 设置多个有效密码
+VALID_PASSWORDS = ["114514", "1919810", "123456"]  # 可以添加更多密码
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,7 +54,7 @@ def get_messages(url):
 @app.get("/api/messages/{phone_id}")
 async def read_messages(phone_id: int, pass_: str = Query(..., alias="pass")):
     # 验证密码
-    if pass_ != CORRECT_PASSWORD:
+    if pass_ not in VALID_PASSWORDS:
         raise HTTPException(
             status_code=403,
             detail="Invalid password"
