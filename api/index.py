@@ -390,7 +390,7 @@ async def root():
                         </svg>
                         <span class="link-text">AI智能助手</span>
                     </a>
-                    <a href="https://buy.aibob.click/sms" target="_blank" class="link-item">
+                    <a href="https://afdian.com/item/0bc1eb44d14f11efa25c52540025c377" target="_blank" class="link-item">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path>
                             <path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path>
